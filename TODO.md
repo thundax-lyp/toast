@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-feishu-docs-ai`：撰写飞书 / Lark Docs AI 研究
-  - 范围文件：
-    - docs/30-designs/research/FEISHU-DOCS-AI-STUDY.md
-    - docs/30-designs/research/assets/feishu-docs-ai/
-  - 处理动作：研究飞书文档 AI 写作、润色、总结、翻译、修订模式和协作上下文。
-  - 验收点：形成至少 3 个 walkthrough，并明确国内协作文档 AI 的操作基线。
-  - 重要度：8/10
-
 - [ ] `research-grammarly`：撰写 Grammarly AI 写作辅助研究
   - 范围文件：
     - docs/30-designs/research/GRAMMARLY-STUDY.md
