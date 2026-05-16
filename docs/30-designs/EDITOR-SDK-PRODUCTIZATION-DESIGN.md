@@ -4,6 +4,8 @@
 
 本文档基于 `../wechat-tiptap` 第一代编辑器，定义 `toast` 产品化、组件化和可拆解化的设计方向。目标不是复制第一代 demo，而是把其中可复用能力抽象成 AI 原生 Editor SDK 和 Editor Component。
 
+完整产品设计与操作效果图见 `docs/30-designs/TOAST-AI-NATIVE-EDITOR-DESIGN.md`。本文档保留为产品化拆包和 SDK 边界说明。
+
 ## 2. First Generation Baseline
 
 `wechat-tiptap` 已经验证的能力：
@@ -28,7 +30,7 @@
 `toast` 固定拆成四类能力：
 
 - Editor Core：线性 block list 文档模型、selection、transaction、command、history、patch。
-- Editor React：可嵌入 React component、toolbar、bubble menu、outline、statusbar。
+- Editor React：首期唯一 UI 组件包，提供可嵌入 React component、toolbar、bubble menu、outline、statusbar。
 - AI Editing：上下文提取、AI action、provider adapter、streaming result、patch generation。
 - Extensions：基础富文本、表格、图片、链接、slash command、AI trigger 等可插拔能力。
 
@@ -84,6 +86,8 @@ interface ToastEditor {
 
 React Component 不直接暴露 Tiptap `Editor` 作为唯一 API。可以提供 escape hatch，但主接口必须是 `ToastEditor`。
 
+首期不提供 Vue、Svelte、Web Component 或 headless DOM UI package。非 React 宿主只接入 `@toast-editor/core` 和 `@toast-editor/tiptap`，UI 适配等 Phase 2 以后再评估。
+
 `ToastDocument` 的公开数据模型固定是线性 block list：
 
 ```ts
@@ -116,6 +120,27 @@ AI 输出对象分三类：
 - `ToastAskResult`：摘要、问答、解释、先问后改，只读展示。
 - `ToastSuggestion`：拼写、clarity、tone、短句改写，轻量 accept / dismiss。
 - `ToastPatch`：真实文档变更，必须 preview / accept / reject / rollback。
+
+`ToastPatch` 内部采用 JSON Patch，公开/持久化层兼容 RFC 6902 操作：
+
+```ts
+interface ToastPatchOperation {
+  op: "add" | "remove" | "replace" | "move" | "copy" | "test";
+  path: ToastPatchPath;
+  from?: ToastPatchPath;
+  value?: unknown;
+}
+```
+
+`ToastPatchPath` 不是任意 JSON Pointer。它只能指向 `ToastDocument` 的白名单路径，例如：
+
+- `/blocks/{index}`
+- `/blocks/{index}/attrs`
+- `/blocks/{index}/content`
+- `/blocks/{index}/content/{inlineIndex}`
+- `/blocks/{index}/content/rows/{row}/cells/{col}`
+
+ProseMirror step / transaction 只作为 runtime apply backend，由 `@toast-editor/tiptap` 从 JSON Patch 转换生成。
 
 ## 6. AI Editing Direction
 
@@ -240,7 +265,10 @@ Document-level 或 agent-level action 在执行前创建 checkpoint。Checkpoint
 Phase 1:
 
 - Tiptap / ProseMirror runtime adapter
+- React-only Editor Component
 - linear `ToastDocument.blocks`
+- JSON Patch based `ToastPatch`
+- neutral light / dark theme
 - toolbar / selection bubble / slash / block side menu / drag handle
 - `ToastAskResult` / `ToastSuggestion` / `ToastPatch`
 - AI patch preview and revision card
@@ -254,6 +282,7 @@ Phase 2:
 - ghost text / partial accept
 - document translation clone
 - collaboration notifications
+- non-React UI adapters
 
 Defer:
 
@@ -264,6 +293,5 @@ Defer:
 
 ## 10. Open Items
 
-- 是否首期只支持 React。
-- `ToastPatch` 采用 ProseMirror step、JSON patch、自定义结构 patch，还是组合模型。
-- 第一代微信样式作为默认主题、可选主题，还是独立 theme package。
+- `ToastDocument` 与 Markdown / HTML / ProseMirror JSON 的 adapter 边界。
+- 首期 `ToastSuggestion` 是否只做本地文本建议，还是接入远程 AI。

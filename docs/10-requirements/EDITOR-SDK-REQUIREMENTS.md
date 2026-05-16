@@ -24,7 +24,7 @@
 `toast` 固定面向可嵌入编辑场景：
 
 - `Editor SDK` 提供稳定 API、事件、命令和扩展点。
-- `Editor Component` 提供可直接挂载的编辑器 UI。
+- `Editor Component` 首期只提供 React 组件。
 - `AI Editing Layer` 负责理解编辑上下文并生成内容修改。
 - `Plugin System` 支撑未来新增 block、mark、command 和 AI action。
 
@@ -136,6 +136,10 @@ AI 不直接覆盖编辑器内容，涉及文档修改时必须生成 patch。pa
 
 patch 应优先作用于结构化节点，只有在必要时才退化为文本范围替换。
 
+`ToastPatch` 内部采用 JSON Patch。格式必须兼容 RFC 6902 的 `add`、`remove`、`replace`、`move`、`copy`、`test` 基础操作，但 path 只能指向 `ToastDocument` 的受控路径，例如 `/blocks/{index}`、`/blocks/{index}/attrs/{key}`、`/blocks/{index}/content`、`/blocks/{index}/content/rows/{row}/cells/{col}`。SDK 必须在 apply 前做 schema validation，禁止 patch 任意 JSON 路径。
+
+`ToastPatch` 还必须携带产品级 metadata：action id、scope、context chips、before / after snapshot、actor、model metadata、review state 和 operation id。
+
 ### 5.6 AI Output Types
 
 AI 输出分为三类：
@@ -201,9 +205,16 @@ Editor Component 首期必须具备：
 
 UI command 不能直接暴露底层 Tiptap command；必须通过 `ToastCommand` registry 包装。
 
+### 5.10 Theme Baseline
+
+默认主题必须重新设计为 neutral editor theme，不继承第一代微信样式。首期必须同时支持 light / dark：
+
+- 所有组件颜色、阴影、边框和状态色通过 CSS variables 暴露。
+- 宿主可以通过 `data-theme="light|dark"` 或 theme provider 控制主题。
+- Patch diff、selection、AI context chips、revision card 在 light / dark 下都必须可读。
+- AI 元素只使用克制 accent，不使用大面积渐变或装饰色块。
+
 ## 6. Open Items
 
-- 确认首个组件形态是否只支持 React。
 - 确认 `ToastDocument` 与 Markdown / HTML / ProseMirror JSON 的 adapter 边界。
-- 确认 `ToastPatch` 内部采用 ProseMirror step、JSON patch、自定义结构 patch，还是组合模型。
 - 确认首期 `ToastSuggestion` 是否只做本地文本建议，还是接入远程 AI。

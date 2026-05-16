@@ -191,7 +191,7 @@ Trigger
 - `section`
 - `document`
 
-AI action 不得直接调用 Tiptap `insertContent` 或 `deleteSelection` 作为最终修改路径。Tiptap transaction 只作为 `ToastPatch` apply 阶段的运行时实现。
+AI action 不得直接调用 Tiptap `insertContent` 或 `deleteSelection` 作为最终修改路径。`ToastPatch.operations` 使用 JSON Patch；Tiptap transaction 只作为 `ToastPatch` apply 阶段的运行时实现。
 
 Suggestion action 可以走轻量路径：
 
