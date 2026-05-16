@@ -230,15 +230,73 @@ Tiptap native UI command 通常没有 preview / accepted / rejected 状态。AI 
 
 ## 7. AI Entry Points
 
-待补充。
+### 7.1 Feature Inventory
+
+| Feature | Scope | Entry | Trigger | Output | Review Model | Toast Baseline |
+| --- | --- | --- | --- | --- | --- | --- |
+| AI Toolkit agent tools | document / selection / range | AI agent integration | tool call | read / insert / patch document content | review options | 必须达到 |
+| Review changes | range / document | AI Toolkit suggestions or tracked changes | AI edit method | suggested document change | accept / reject | 必须达到 |
+| Selection awareness | selection | AI tool context | selected content | scoped AI context | depends on edit method | 必须支持 |
+| Schema awareness | document / schema | AI Toolkit schema context | AI action | schema-aware generation | depends on edit method | 必须支持 |
+| AI Generation | cursor / selection | AI generation extension | command / autocomplete | streamed text response | response management | adapt |
+| Multi-document agent | workspace | AI agent | multi-document context | cross-document operations | review per operation | defer |
+
+### 7.2 Button And Entry Inventory
+
+| UI Area | Button / Item | Visible When | Action | Opens | Final Effect | Source |
+| --- | --- | --- | --- | --- | --- | --- |
+| AI Toolkit integration | execute tool | agent tool call available | read / insert / patch editor content | custom agent UI | tool result or suggestion | Official docs: AI Toolkit API |
+| Review UI | accept suggestion | suggestion visible | accepts proposed change | none | document modified or preview applied | Official docs: Review changes |
+| Review UI | reject suggestion | suggestion visible | rejects proposed change | none | suggestion dismissed or review undone | Official docs: Review changes |
+| AI menu | AI ask / improve | selected content or configured action | starts AI edit | AI menu / custom UI | generated content or proposal | Official docs: UI components overview |
+| AI Generation | autocomplete / command | cursor or command trigger | starts text generation | response UI | streamed text | Official docs: Content AI overview |
+
+### 7.3 UI State Matrix
+
+| State | UI Signal | User Can Do | Next State |
+| --- | --- | --- | --- |
+| idle | AI entry visible | trigger AI action | generating |
+| generating | streaming / tool call progress | wait or stop | preview / applied |
+| preview | suggestion shown before edit | accept or reject | accepted / rejected |
+| review | document already changed with suggestion | accept or reject / undo change | accepted / rejected |
+| accepted | suggestion accepted | continue editing | idle |
+| rejected | suggestion rejected | continue editing | idle |
+| error | tool or model error | retry or cancel | idle |
+
+Tiptap AI Toolkit 支持 preview mode 和 review mode。preview mode 在用户接受前不修改文档；review mode 先修改文档，再提供可撤销的 suggestion。
 
 ## 8. Context Model
 
-待补充。
+Tiptap Content AI 公开文档说明 AI Toolkit 支持 read、insert、patch document content，并包含 document chunking、schema-aware generation、real-time streaming 和 suggestion-based reviews。AI Toolkit API reference 说明可读取 JSON、HTML、text，并支持 selections、ranges、chunked reads。
+
+对 `toast` 的结论：
+
+- `toast` 必须支持 selection-aware context。
+- `toast` 必须支持 schema-aware 或 block schema-aware context。
+- `toast` 上下文应优先基于 `ToastDocument.blocks`、block id、section range 和 selected inline range。
+- Tiptap 的 `getTextRange`、JSON range、HTML range 等能力可以作为 adapter 内部实现，但不能成为主上下文协议。
+- 对比 Tiptap AI Toolkit，`toast` 的差异点是 provider-neutral、开源可控、linear block list first。
 
 ## 9. Patch / Review / Revision Model
 
-待补充。
+Tiptap AI Toolkit 的 review changes 文档说明两类 review UI：
+
+- Tracked Changes：变更持久保存在文档中，并对协作者可见。
+- AI Toolkit suggestions：基于 decorations 的临时 review UI，只对当前用户可见。
+
+Suggestion 对象包含 `id`、`range` 和 `replacementOptions`。review modes 包括：
+
+- `disabled`：直接编辑文档，不生成 suggestions。
+- `preview`：先生成 suggestions，不修改文档；用户接受后才应用。
+- `review`：先修改文档，再生成可用于撤销的 suggestions。
+
+对 `toast` 的结论：
+
+- `toast` 必须采用 preview-first 作为默认 AI patch 模式。
+- `disabled` 直接写入模式不得作为 AI action 默认行为。
+- `review` 模式可作为高信任批量操作或 agent 执行后的可撤销模式，但首期应谨慎。
+- `ToastPatch` 应比 Tiptap suggestion 更产品化：必须包含 AI action、scope、source context、before / after、review state、operation history。
+- Tiptap suggestions 使用 ProseMirror range；`toast` patch 应优先使用 block id、block range 和 inline range。
 
 ## 10. Keyboard And Shortcut Model
 
@@ -254,7 +312,10 @@ Tiptap native UI command 通常没有 preview / accepted / rejected 状态。AI 
 
 ## 13. Limits
 
-待补充。
+- AI Toolkit 是 paid add-on，并要求访问 private registry。公开 npm registry 中未查到 `@tiptap-pro/extension-ai-toolkit` 或相关 pro 包。
+- AI Toolkit 能力很强，但商业边界不适合作为 `toast` 的开源核心依赖。
+- Tiptap review changes 以 ProseMirror range / suggestion 为中心，不能直接满足 `toast` 的 block id / block range patch 协议。
+- Tiptap AI Generation 更偏内置文本命令和 streaming response，不等同于完整 AI patch workflow。
 
 ## 14. Required Baseline For Toast
 
@@ -266,6 +327,11 @@ Tiptap native UI command 通常没有 preview / accepted / rejected 状态。AI 
 | ProseMirror transaction | adapt | Phase 1 | 适合作为 patch apply backend，不适合作为唯一产品 patch |
 | ProseMirror steps | investigate | Phase 1 | 可能承载内部 patch，但需要产品 metadata |
 | Nested list / table runtime tree | adapt | Phase 1 | table 可作为 block 内部结构，list 需要公开模型打平策略 |
+| AI Toolkit document tools | adapt | Phase 1 | 能力方向必须达到，但不能依赖商业 add-on |
+| AI Toolkit preview suggestions | adopt | Phase 1 | 默认 AI patch 应先预览再接受 |
+| AI Toolkit review-after-edit mode | defer | Phase 2 | 可用于 agent 批量操作，但首期风险更高 |
+| AI Toolkit direct edit without suggestions | reject | Phase 1 | AI 修改不得绕过 patch review |
+| Tracked changes integration | investigate | Phase 2 | 可能用于协作场景，但首期先做独立 `ToastPatch` |
 
 ## 15. Lessons For Toast
 
@@ -274,7 +340,9 @@ Tiptap native UI command 通常没有 preview / accepted / rejected 状态。AI 
 - `ToastDocument` 必须是 adapter 层产物，稳定表达 linear block list。
 - `ToastSelection` 必须基于 block id / block range / inline range，而不是只暴露 ProseMirror positions。
 - `ToastPatch` 可以借助 ProseMirror transaction / steps 执行，但必须保留产品级 review metadata。
+- Tiptap AI Toolkit 已经证明 read / insert / patch / review 是 AI 编辑器底线能力；`toast` 不能低于这一点。
+- `toast` 的自研价值来自开源可控、provider-neutral、linear block list patch 和更平铺的操作面。
 
 ## 16. Open Items
 
-- 补充 `research-tiptap-ai`。
+无

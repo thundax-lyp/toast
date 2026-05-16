@@ -12,13 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-tiptap-ai`：分析 Tiptap AI Toolkit 和 toast 替代边界
-  - 范围文件：
-    - docs/30-designs/research/TIPTAP-STUDY.md
-  - 处理动作：分析 Tiptap AI Toolkit 的公开能力、商业边界、AI changes / review 能力和 toast 可替代设计。
-  - 验收点：明确 toast 不能低于的 AI 能力，以及哪些能力需要自研以避开商业封闭边界。
-  - 重要度：10/10
-
 - [ ] `research-blocknote-sources`：采集 BlockNote 数据来源清单
   - 范围文件：
     - docs/30-designs/research/BLOCKNOTE-STUDY.md
