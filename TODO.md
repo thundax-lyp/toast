@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-tiptap-ui`：分析 Tiptap UI 操作模式
-  - 范围文件：
-    - docs/30-designs/research/TIPTAP-STUDY.md
-    - docs/30-designs/research/assets/tiptap/
-  - 处理动作：分析 toolbar、bubble menu、floating menu、slash command、NodeView 和 React UI components。
-  - 验收点：至少形成 3 个 UI walkthrough，并标明截图或替代来源。
-  - 重要度：9/10
-
 - [ ] `research-tiptap-ai`：分析 Tiptap AI Toolkit 和 toast 替代边界
   - 范围文件：
     - docs/30-designs/research/TIPTAP-STUDY.md

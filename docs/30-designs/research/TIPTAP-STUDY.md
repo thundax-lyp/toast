@@ -22,6 +22,11 @@
 - Official docs: https://tiptap.dev/docs/content-ai/capabilities/ai-toolkit/api-reference，访问日期 2026-05-16，用于研究 AI Toolkit 的 read、insert、patch、review、schema awareness、diff utility。
 - Official docs: https://tiptap.dev/docs/content-ai/capabilities/ai-toolkit/guides/review-changes，访问日期 2026-05-16，用于研究 AI changes review 和 accept / reject 工作流。
 - Official docs: https://tiptap.dev/docs/content-ai/capabilities/ai-toolkit/changelog/ai-toolkit，访问日期 2026-05-16，用于研究 AI Toolkit 的 tracked changes、document read 和 suggestion 变化。
+- Official docs: https://tiptap.dev/docs/ui-components/getting-started，访问日期 2026-05-16，用于研究 Tiptap UI Components 的安装和组件使用方式。
+- Official docs: https://tiptap.dev/docs/ui-components/components/overview，访问日期 2026-05-16，用于研究 toolbar、AI menu、drag context menu、slash dropdown menu、node components 等 UI 组件。
+- Official docs: https://tiptap.dev/docs/ui-components/primitives/toolbar，访问日期 2026-05-16，用于研究 toolbar primitive。
+- Official docs: https://tiptap.dev/docs/editor/getting-started/style-editor/custom-menus，访问日期 2026-05-16，用于研究自定义 menu、bubble menu 和 floating menu。
+- Official docs: https://tiptap.dev/docs/examples/advanced/menus，访问日期 2026-05-16，用于研究 bubble menu 和 floating menu 示例。
 - Source code: https://github.com/ueberdosis/tiptap，访问日期 2026-05-16，用于后续研究源码、类型定义、extension 实现和 license。
 - npm: `@tiptap/core@3.23.4`，MIT，访问日期 2026-05-16，用于确认核心包版本、许可和 repository。
 - npm: `@tiptap/react@3.23.4`，MIT，访问日期 2026-05-16，用于确认 React 集成版本、许可和 repository。
@@ -100,11 +105,128 @@ ProseMirror history plugin 提供 undo / redo，并允许通过 transaction meta
 
 ## 5. Editing Surface
 
-待补充。
+### 5.1 Feature Inventory
+
+| Feature | Scope | Entry | Trigger | Output | Review Model | Toast Baseline |
+| --- | --- | --- | --- | --- | --- | --- |
+| Toolbar command | selection / block | persistent toolbar | click button | Tiptap command / transaction | undo / redo | 必须支持 |
+| Bubble menu | selection | selection floating menu | text selected | command menu near selection | undo / redo | 必须支持 |
+| Floating menu | cursor / block | empty paragraph menu | cursor in empty block | insertion / transform commands | undo / redo | 必须支持 |
+| Slash command | cursor / block | `/` suggestion menu | user types `/` | insert or transform block | undo / redo | 必须支持 |
+| NodeView | block | custom node rendering | node rendered / selected | embedded React UI inside document | command-specific | 必须支持 |
+| Drag context menu | block | drag handle / context menu | block hover / drag | block transform / copy / delete | undo / redo | adapt |
+| AI menu | selection / block | AI UI component | selected text / AI trigger | AI generation or edit action | review if AI Toolkit used | investigate |
+
+### 5.2 Button And Entry Inventory
+
+| UI Area | Button / Item | Visible When | Action | Opens | Final Effect | Source |
+| --- | --- | --- | --- | --- | --- | --- |
+| Toolbar | Bold / Italic / Heading / List buttons | editor mounted | run formatting command | none | direct transaction | Official docs: UI components overview |
+| Toolbar | Slash Command Trigger Button | editor focused | inserts slash command trigger | suggestion menu | command selection | Official docs: UI components overview |
+| Bubble menu | Mark / link / color items | text selected | run selection command | popover if needed | direct transaction | Official docs: bubble menu |
+| Floating menu | Insert / transform items | empty block or configured condition | run block command | floating menu | direct transaction | Official docs: custom menus |
+| Slash menu | command item | `/` typed | insert or transform block | suggestion menu | direct transaction | Official docs: UI components overview |
+| Drag context menu | copy / duplicate / delete / transform | block drag handle visible | block-level command | context menu | direct transaction | Official docs: UI components overview |
+| AI menu | AI ask / improve items | selected text or AI component mounted | starts AI action | AI menu / panel | suggestion / change proposal | Official docs: UI components overview |
+
+### 5.3 UI State Matrix
+
+| State | UI Signal | User Can Do | Next State |
+| --- | --- | --- | --- |
+| idle | toolbar visible, editor focused | click toolbar button or type trigger | command-running / menu-open |
+| menu-open | bubble / floating / slash menu visible | choose item, navigate keyboard, dismiss | command-running / cancelled |
+| command-running | selected command executes | wait for transaction | applied |
+| applied | content or selection changed | undo / redo | idle |
+| cancelled | menu dismissed | continue editing | idle |
+| error | invalid command or schema mismatch | retry or inspect content error | idle |
+
+Tiptap native UI command 通常没有 preview / accepted / rejected 状态。AI Toolkit 可能提供 review states，单独在 `research-tiptap-ai` 中分析。
 
 ## 6. Operation Walkthroughs
 
-待补充。
+### Operation: Toolbar Formatting
+
+- Entry: persistent toolbar
+- Preconditions: editor mounted, selection or cursor active
+- Steps:
+  1. UI Area: Toolbar
+     - User Action: click formatting button
+     - Button / Item: Bold / Italic / Heading / List
+     - System Feedback: command applies and editor state updates
+     - Data / Context Used: current selection and active marks / nodes
+     - Content Mutation: yes, direct transaction
+- UI States: idle -> command-running -> applied
+- Result: selected text or current block changes format
+- Cancel / Undo / Rollback: ProseMirror history undo / redo
+- Screenshot References: `docs/30-designs/research/assets/tiptap/SOURCES.md`，截图待补，当前以官方 UI components 文档替代
+- Data Sources: Official docs: UI components overview, toolbar primitive, commands
+- Toast Implication: `toast` 应支持 persistent toolbar，但 toolbar action 必须通过 `ToastCommand` registry 包装，不直接作为宿主主 API 暴露 Tiptap command。
+
+### Operation: Bubble Menu On Selection
+
+- Entry: selection bubble menu
+- Preconditions: user selects text
+- Steps:
+  1. UI Area: Editor selection
+     - User Action: select text
+     - Button / Item: none
+     - System Feedback: bubble menu appears near selection
+     - Data / Context Used: current selection
+     - Content Mutation: no
+  2. UI Area: Bubble menu
+     - User Action: click mark / link / color item
+     - Button / Item: mark or link command
+     - System Feedback: command applies
+     - Data / Context Used: selected text range
+     - Content Mutation: yes, direct transaction
+- UI States: idle -> menu-open -> command-running -> applied
+- Result: selected text receives mark or link attrs
+- Cancel / Undo / Rollback: dismiss bubble menu or undo transaction
+- Screenshot References: `docs/30-designs/research/assets/tiptap/SOURCES.md`，截图待补，当前以官方 bubble menu 文档替代
+- Data Sources: Official docs: BubbleMenu extension, custom menus
+- Toast Implication: `toast` 的 selection bubble 必须同时承载 formatting 和 selection-level AI，但所有 AI 修改必须走 `ToastPatch` preview。
+
+### Operation: Slash Command Insert
+
+- Entry: slash command
+- Preconditions: cursor in editable text block
+- Steps:
+  1. UI Area: Editor content
+     - User Action: type `/`
+     - Button / Item: slash trigger
+     - System Feedback: suggestion menu opens
+     - Data / Context Used: cursor position and query text
+     - Content Mutation: no
+  2. UI Area: Slash menu
+     - User Action: choose command item
+     - Button / Item: heading / list / image / AI command
+     - System Feedback: command executes
+     - Data / Context Used: cursor block and command payload
+     - Content Mutation: yes, direct transaction
+- UI States: idle -> menu-open -> command-running -> applied
+- Result: block is inserted or transformed
+- Cancel / Undo / Rollback: Escape / click outside / undo
+- Screenshot References: `docs/30-designs/research/assets/tiptap/SOURCES.md`，截图待补，当前以官方 UI components overview 替代
+- Data Sources: Official docs: UI components overview, suggestion menu
+- Toast Implication: `toast` 应支持 slash command，但 command items 必须映射到 `ToastCommand`，AI command 必须进入 AI action -> patch workflow。
+
+### Operation: Custom NodeView
+
+- Entry: rendered custom node
+- Preconditions: schema includes custom node and node view
+- Steps:
+  1. UI Area: Editor content
+     - User Action: insert or select custom node
+     - Button / Item: node-specific UI
+     - System Feedback: custom React / DOM UI renders inside editor
+     - Data / Context Used: node attrs and node position
+     - Content Mutation: optional, via node commands
+- UI States: idle -> node-rendered -> command-running -> applied
+- Result: custom block can show embedded UI and node-specific controls
+- Cancel / Undo / Rollback: command-specific undo / redo
+- Screenshot References: `docs/30-designs/research/assets/tiptap/SOURCES.md`，截图待补，当前以 node API 文档替代
+- Data Sources: Official docs: Node API, UI node components
+- Toast Implication: `toast` 可用 NodeView 实现 table、image、AI patch preview 等复杂 block UI，但公开数据仍保持 linear block list。
 
 ## 7. AI Entry Points
 
@@ -155,5 +277,4 @@ ProseMirror history plugin 提供 undo / redo，并允许通过 transaction meta
 
 ## 16. Open Items
 
-- 补充 `research-tiptap-ui`。
 - 补充 `research-tiptap-ai`。
