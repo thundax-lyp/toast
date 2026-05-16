@@ -12,13 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-rules`：新增研究文档治理规则
-  - 范围文件：
-    - docs/00-governance/RESEARCH-DOCUMENT-RULES.md
-  - 处理动作：定义研究文档结构、数据来源格式、截图引用规则、walkthrough 格式和质量门禁。
-  - 验收点：后续研究文档必须能按该规则检查数据来源、操作细节、截图来源和 toast 结论。
-  - 重要度：10/10
-
 - [ ] `research-runbook`：补齐 AI 编辑器研究 RUNBOOK
   - 范围文件：
     - docs/30-designs/RUNBOOK-AI-EDITOR-RESEARCH.md
