@@ -12,13 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-blocknote-data-model`：分析 BlockNote block tree 数据模型
-  - 范围文件：
-    - docs/30-designs/research/BLOCKNOTE-STUDY.md
-  - 处理动作：分析 `Block` 类型、`children: Block[]`、inline content、table content、`blockGroup` / `blockContainer` / `blockContent`。
-  - 验收点：明确 BlockNote 的 physical block tree 与 toast linear block list 的差异。
-  - 重要度：10/10
-
 - [ ] `research-blocknote-ui`：分析 BlockNote UI 操作模式
   - 范围文件：
     - docs/30-designs/research/BLOCKNOTE-STUDY.md
