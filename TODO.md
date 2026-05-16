@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-cursor-inline`：分析 Cursor inline edit 和 quick question
-  - 范围文件：
-    - docs/30-designs/research/CURSOR-STUDY.md
-    - docs/30-designs/research/assets/cursor/
-  - 处理动作：分析 Tab completion、Inline Edit、Quick Question 的入口、步骤、状态、取消和应用方式。
-  - 验收点：形成至少 2 个 walkthrough，并映射到 toast 的 cursor / selection 级 AI 能力。
-  - 重要度：9/10
-
 - [ ] `research-cursor-agent`：分析 Cursor chat / agent / context / checkpoint
   - 范围文件：
     - docs/30-designs/research/CURSOR-STUDY.md
