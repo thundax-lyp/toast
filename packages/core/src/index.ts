@@ -1,4 +1,14 @@
 export type {
+  ToastAIInput,
+  ToastAskAction,
+  ToastAskResult,
+  ToastPatchProposal,
+  ToastScope,
+  ToastSuggestion,
+  ToastSuggestionKind,
+  ToastSuggestionState
+} from "./ai-output/types.js";
+export type {
   ToastBlock,
   ToastBlockType,
   ToastDocument,
@@ -17,6 +27,10 @@ export {
   type ToastDocumentValidationError,
   type ToastDocumentValidationResult
 } from "./block-model/validate.js";
+export type {
+  ToastCheckpoint,
+  ToastCheckpointInput
+} from "./checkpoint/types.js";
 export {
   createToastCommandRegistry,
   type ToastCommandRegistry
@@ -35,6 +49,7 @@ export type {
   ToastContextOptions,
   ToastContextSummary
 } from "./context/types.js";
+export type { ToastEditor } from "./editor/types.js";
 export { isToastPatchPath, toToastPatchPath, type ToastPatchPath } from "./patch/path.js";
 export type {
   ToastPatch,
