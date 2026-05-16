@@ -12,13 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-plate-scope`：判断 Plate 是否进入深度研究
-  - 范围文件：
-    - docs/30-designs/research/PLATE-SCOPE.md
-  - 处理动作：快速采集 Plate 文档、npm、license、AI 能力和 UI 组件信息，判断是否需要后续 `PLATE-STUDY.md`。
-  - 验收点：明确 Plate 是进入深研、只作为参考，还是排除在本轮研究之外。
-  - 重要度：7/10
-
 - [ ] `research-open-source-baseline`：汇总开源编辑器能力基线
   - 范围文件：
     - docs/30-designs/research/OPEN-SOURCE-EDITOR-BASELINE.md
