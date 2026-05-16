@@ -96,13 +96,23 @@ BlockNote 的体验中心是 physical block tree。`toast` 可以参考其显性
 
 ## 8. Toast AI Inside Ability Set
 
-### 8.1 Cursor-Level
+### 8.1 Output Layers
+
+`toast` 不把所有 AI 输出都当成 patch。操作层分为：
+
+| Layer | Object | Review | Use Case |
+| --- | --- | --- | --- |
+| Ask | `ToastAskResult` | read-only / insert explicitly | summary, Q&A, quick question |
+| Suggest | `ToastSuggestion` | accept / dismiss | grammar, clarity, tone, ghost text |
+| Patch | `ToastPatch` | preview / accept / reject / rollback | rewrite, insert, transform, agent edit |
+
+### 8.2 Cursor-Level
 
 - `Continue Here`：从光标处续写。
 - `Insert From Prompt`：在当前位置插入用户描述的内容。
 - `Ask Here`：解释当前位置上下文，不修改文档。
 
-### 8.2 Selection-Level
+### 8.3 Selection-Level
 
 - `Rewrite Selection`
 - `Polish Selection`
@@ -113,7 +123,7 @@ BlockNote 的体验中心是 physical block tree。`toast` 可以参考其显性
 - `Fix Writing`
 - `Change Tone`
 
-### 8.3 Block-Level
+### 8.4 Block-Level
 
 - `Improve Block`
 - `Continue After Block`
@@ -124,7 +134,7 @@ BlockNote 的体验中心是 physical block tree。`toast` 可以参考其显性
 - `Generate Variants`
 - `Add Examples`
 
-### 8.4 Section-Level
+### 8.5 Section-Level
 
 Section 由 heading 和 block range 计算得到。
 
@@ -137,7 +147,7 @@ Section 由 heading 和 block range 计算得到。
 - `Check Consistency`
 - `Extract Action Items`
 
-### 8.5 Document-Level
+### 8.6 Document-Level
 
 - `Generate Outline`
 - `Review Document`
@@ -147,6 +157,15 @@ Section 由 heading 和 block range 计算得到。
 - `Style Consistency Check`
 
 文档级 AI 固定只生成 patch list，不直接覆盖全文。
+
+### 8.7 Product-Level Baseline
+
+- Empty block draft: patch preview, keep / regenerate / discard.
+- Selection rewrite: variants, replace / insert below.
+- Document summary / Q&A: `ToastAskResult` by default.
+- Inline suggestion: `ToastSuggestion` with accept / dismiss.
+- Revision review: right-side card with accept / reject / comment / modify / withdraw.
+- Context: visible chips for selection, section, document, source, rule and history.
 
 ## 9. Interaction Rules
 
@@ -174,6 +193,24 @@ Trigger
 
 AI action 不得直接调用 Tiptap `insertContent` 或 `deleteSelection` 作为最终修改路径。Tiptap transaction 只作为 `ToastPatch` apply 阶段的运行时实现。
 
+Suggestion action 可以走轻量路径：
+
+```text
+Detect
+-> Show ToastSuggestion
+-> Accept / Dismiss
+-> Record Suggestion State
+```
+
+Ask action 固定不改文档：
+
+```text
+Trigger
+-> Build Context
+-> Return ToastAskResult
+-> Optional Insert As Patch
+```
+
 ## 10. What Not To Copy
 
 - 不复制 Cursor 的代码文件心智模型；`toast` 的最小单位是 block。
@@ -184,8 +221,8 @@ AI action 不得直接调用 Tiptap `insertContent` 或 `deleteSelection` 作为
 
 ## 11. Open Items
 
-- `Continue Here` 是否作为首个低摩擦 AI suggestion。
-- `Document Agent` 是否进入第一阶段。
-- patch preview 是 inline diff、side panel diff，还是二者同时支持。
-- checkpoint 粒度是每次 AI action、每个 patch list，还是每个 accepted operation。
-- context chips 的 UI 是否由 SDK 提供默认组件。
+- `Continue Here` 进入 Phase 2 ghost text / partial accept，不作为首期主闭环。
+- `Document Agent` 首期只做 side panel + patch list，不做跨文档 agent。
+- patch preview 首期采用 side panel / revision-card，inline diff 作为补充。
+- checkpoint 粒度首期按 AI operation 创建。
+- context chips 首期由 SDK 提供默认组件，宿主可替换。

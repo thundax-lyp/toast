@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-synthesis-design`：同步研究结论到设计文档
-  - 范围文件：
-    - docs/30-designs/EDITOR-SDK-PRODUCTIZATION-DESIGN.md
-    - docs/30-designs/AI-EDITOR-OPERATION-COMPARISON.md
-  - 处理动作：将研究结论同步为 toast 的包边界、UI 操作模式、AI action 分层、patch review 和 checkpoint 设计。
-  - 验收点：设计文档不再停留在泛泛比较，明确首期、二期和不做项。
-  - 重要度：9/10
-
 - [ ] `research-closeout`：收口研究 TODO 和 RUNBOOK
   - 范围文件：
     - TODO.md

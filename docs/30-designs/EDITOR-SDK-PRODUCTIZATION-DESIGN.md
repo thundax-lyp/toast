@@ -47,6 +47,19 @@ Playground 只用于演示和测试接入方式，不承载核心逻辑。
 
 首期可以先在单仓库内用目录模拟包边界，等 API 稳定后再拆 package。
 
+首期模块应按以下内部边界组织：
+
+| Module | Responsibility |
+| --- | --- |
+| `block-model` | `ToastDocument`、`ToastBlock`、linear block list、section range |
+| `selection` | block range、inline range、cursor block、selection text |
+| `command` | `ToastCommand` registry、toolbar/slash/block action 统一入口 |
+| `context` | `ToastContext`、context chips、coverage、rules/history/source |
+| `ai-action` | action registry、tool permissions、provider-neutral request |
+| `patch` | `ToastPatch`、diff、preview、accept/reject/rollback |
+| `suggestion` | `ToastSuggestion`、inline card、accept/dismiss |
+| `checkpoint` | AI operation checkpoint and restore |
+
 ## 5. SDK Interface Direction
 
 Editor SDK 应提供稳定入口：
@@ -58,10 +71,14 @@ interface ToastEditor {
   getSelection(): ToastSelection;
   getContext(options: ContextOptions): ToastContext;
   runCommand(command: ToastCommand): void;
+  ask(input: AiActionInput): Promise<ToastAskResult>;
+  suggest(input: SuggestionInput): Promise<ToastSuggestion[]>;
   proposePatch(input: AiActionInput): Promise<ToastPatch>;
   applyPatch(patch: ToastPatch): void;
   rejectPatch(patchId: string): void;
   rollbackPatch(patchId: string): void;
+  createCheckpoint(input: CheckpointInput): ToastCheckpoint;
+  restoreCheckpoint(checkpointId: string): void;
 }
 ```
 
@@ -94,6 +111,12 @@ heading block 只表达逻辑层级，不拥有物理 children。章节、目录
 
 上例可以计算出逻辑章节树，但存储和 patch 的目标仍然是稳定 block id 与线性 block range。
 
+AI 输出对象分三类：
+
+- `ToastAskResult`：摘要、问答、解释、先问后改，只读展示。
+- `ToastSuggestion`：拼写、clarity、tone、短句改写，轻量 accept / dismiss。
+- `ToastPatch`：真实文档变更，必须 preview / accept / reject / rollback。
+
 ## 6. AI Editing Direction
 
 第一代 `Magic` 能力应拆成：
@@ -109,6 +132,49 @@ AI 不直接写入编辑器正文。所有 AI 结果必须先形成 patch。
 
 patch 优先基于 block id 和 block range 表达。只有行内文字变更才使用 inline range。HTML diff 不作为核心 patch 模型。
 
+AI action 固定声明 scope 和 tool permissions：
+
+```ts
+type ToastActionScope =
+  | "cursor"
+  | "selection"
+  | "block"
+  | "blockRange"
+  | "section"
+  | "document";
+
+interface ToastAIAction {
+  id: string;
+  label: string;
+  scope: ToastActionScope[];
+  output: "ask" | "suggestion" | "patch";
+  permissions: {
+    add: boolean;
+    update: boolean;
+    delete: boolean;
+    transform: boolean;
+  };
+}
+```
+
+首期内置 action：
+
+- Empty block draft
+- Rewrite selection
+- Polish selection
+- Translate selection
+- Summarize selection / section / document
+- Ask about selection / document
+- Convert selection to table/list
+- Improve block
+
+暂缓 action：
+
+- database / field autofill
+- scheduled automation
+- cross-document agent edit
+- persisted AI prompt block
+
 ## 7. Componentization Direction
 
 第一代 UI 部件保留为可选组件：
@@ -121,12 +187,83 @@ patch 优先基于 block id 和 block range 表达。只有行内文字变更才
 - `ToastSlashCommand`
 - `ToastAiPanel`
 - `ToastPatchPreview`
+- `ToastSuggestionCard`
+- `ToastRevisionCard`
+- `ToastContextChips`
+- `ToastBlockSideMenu`
+- `ToastDragHandle`
 
 每个组件通过 SDK context 获取 editor state，不直接依赖 demo 页面布局。
 
-## 8. Open Items
+首期 UI surface：
+
+| Surface | Responsibilities |
+| --- | --- |
+| Persistent toolbar | formatting、block type、insert、common AI action |
+| Selection bubble | inline formatting、selection AI、Ask / Rewrite |
+| Slash command | insert block、transform block、AI command |
+| Block side menu | add、move、delete、duplicate、block AI |
+| AI side panel | document Q&A、agent session、context chips、patch list |
+| Suggestion card | local suggestion accept / dismiss |
+| Revision card | patch accept / reject / comment / modify / withdraw |
+| Patch preview | block-level diff and rollback |
+
+## 8. Review And Checkpoint Design
+
+AI 修改遵循统一流程：
+
+```text
+Trigger
+-> Select Scope
+-> Build Context
+-> Run AI Action
+-> Generate ToastAskResult / ToastSuggestion / ToastPatch
+-> Review
+-> Accept / Reject / Dismiss / Rollback
+-> Record Operation
+```
+
+`ToastPatch` review 默认使用 revision-card mental model。每个 patch 必须保留：
+
+- action id
+- actor and model metadata
+- scope
+- context chips and coverage
+- before / after
+- review state
+- operation history id
+
+Document-level 或 agent-level action 在执行前创建 checkpoint。Checkpoint 不是版本管理系统，只负责 AI operation rollback。
+
+## 9. Phase Decisions
+
+Phase 1:
+
+- Tiptap / ProseMirror runtime adapter
+- linear `ToastDocument.blocks`
+- toolbar / selection bubble / slash / block side menu / drag handle
+- `ToastAskResult` / `ToastSuggestion` / `ToastPatch`
+- AI patch preview and revision card
+- context chips for selection / section / document / rules
+
+Phase 2:
+
+- external source provider
+- workspace search context
+- meeting transcript source
+- ghost text / partial accept
+- document translation clone
+- collaboration notifications
+
+Defer:
+
+- field/database AI autofill
+- scheduled automation
+- cross-document agent edits
+- full workflow automation
+
+## 10. Open Items
 
 - 是否首期只支持 React。
 - `ToastPatch` 采用 ProseMirror step、JSON patch、自定义结构 patch，还是组合模型。
-- 第一阶段 AI action 是否以“选区改写 + patch 预览”为最小闭环。
 - 第一代微信样式作为默认主题、可选主题，还是独立 theme package。
