@@ -12,13 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-open-source-baseline`：汇总开源编辑器能力基线
-  - 范围文件：
-    - docs/30-designs/research/OPEN-SOURCE-EDITOR-BASELINE.md
-  - 处理动作：基于 Tiptap、BlockNote 和 Plate scope 文档汇总 toast 的开源最低能力线。
-  - 验收点：明确 Tiptap 底座基线、BlockNote 开箱体验基线、AI 能力基线和 toast 差异点。
-  - 重要度：9/10
-
 - [ ] `research-cursor-sources`：采集 Cursor 数据来源清单
   - 范围文件：
     - docs/30-designs/research/CURSOR-STUDY.md
