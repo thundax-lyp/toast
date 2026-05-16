@@ -12,13 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-synthesis-requirements`：同步研究结论到需求文档
-  - 范围文件：
-    - docs/10-requirements/EDITOR-SDK-REQUIREMENTS.md
-  - 处理动作：将研究中稳定下来的能力边界、数据模型和 AI 操作要求同步到需求文档。
-  - 验收点：需求文档中的 open items 被删除、拆分或收窄。
-  - 重要度：9/10
-
 - [ ] `research-synthesis-design`：同步研究结论到设计文档
   - 范围文件：
     - docs/30-designs/EDITOR-SDK-PRODUCTIZATION-DESIGN.md

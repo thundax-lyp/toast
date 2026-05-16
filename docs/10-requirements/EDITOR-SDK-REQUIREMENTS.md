@@ -43,6 +43,28 @@
 
 ## 5. Core Requirements
 
+### 5.0 Runtime And Public Model
+
+首期运行时固定基于 `Tiptap` / `ProseMirror`，但公开 SDK 不直接以 Tiptap `Editor` 作为主控制面。
+
+公开数据协议必须包含：
+
+```ts
+interface ToastDocument {
+  version: string;
+  blocks: ToastBlock[];
+}
+
+interface ToastBlock {
+  id: string;
+  type: string;
+  attrs?: Record<string, unknown>;
+  content?: ToastInlineContent[] | ToastTableContent | ToastMediaContent;
+}
+```
+
+`ToastBlock` 不允许出现 `children` 字段。复杂结构可以存在于 block 内部，例如 table content，但不能把全局文档结构变成物理 block tree。
+
 ### 5.1 Document Structure Awareness
 
 编辑器必须维护结构化文档模型，而不是只处理纯字符串。公开输出物固定是线性的 block list，不是 HTML DOM tree，也不是物理嵌套的 block tree。
@@ -68,10 +90,11 @@ AI 必须能读取 block、inline、mark、heading、list、table 等结构信�
 
 AI action 必须接收当前 selection。selection 至少表达：
 
-- 当前选区范围
+- 当前选区范围，优先表达为 block id、block range 和 inline range
 - 选区文本
 - 选区所在结构节点
 - 选区前后邻近上下文
+- 当前 cursor block 和所在 heading section
 
 ### 5.3 Context Awareness
 
@@ -80,10 +103,13 @@ AI 必须能获取当前任务所需的最小上下文。上下文应包含：
 - 文档标题或摘要
 - 当前 selection
 - selection 邻近内容
-- 相关结构节点
+- 相关结构节点和 heading section range
+- explicit context chips，例如 section、document、source、rule、history
 - 可选的宿主业务上下文
 
 上下文提取必须可控，不默认把完整文档发送给 AI。
+
+长文档 summary / Q&A 必须暴露 coverage：使用了全文、当前 section、选区、还是 chunk summary。
 
 ### 5.4 Operation History Awareness
 
@@ -97,7 +123,7 @@ AI 必须能获取当前任务所需的最小上下文。上下文应包含：
 
 ### 5.5 Patch-Based Editing
 
-AI 不直接覆盖编辑器内容，必须生成 patch。patch 必须支持：
+AI 不直接覆盖编辑器内容，涉及文档修改时必须生成 patch。patch 必须支持：
 
 - 描述目标范围
 - 展示变更前后内容
@@ -105,12 +131,79 @@ AI 不直接覆盖编辑器内容，必须生成 patch。patch 必须支持：
 - 应用
 - 拒绝
 - 回滚
+- 重试或重新生成
+- 接受后的 operation log
 
 patch 应优先作用于结构化节点，只有在必要时才退化为文本范围替换。
+
+### 5.6 AI Output Types
+
+AI 输出分为三类：
+
+| Type | Use Case | Review Model |
+| --- | --- | --- |
+| `ToastAskResult` | 摘要、问答、解释、先问后改 | 只读展示；用户显式插入后才变成 patch |
+| `ToastSuggestion` | 拼写、语法、clarity、tone、短句改写 | accept / dismiss |
+| `ToastPatch` | 选区改写、block 插入、结构转换、agent 编辑 | preview / accept / reject / rollback |
+
+首期必须支持 `ToastPatch` 和 `ToastAskResult`。`ToastSuggestion` 作为低打扰写作建议进入首期最小能力，但可以先覆盖简单文本范围。
+
+### 5.7 AI Entry Points
+
+首期必须支持以下 AI 入口：
+
+- empty block / blank document draft
+- selection rewrite / polish / translate / summarize
+- slash AI command
+- document side panel summary / Q&A
+- block / page summary
+- revision-card patch review
+- inline suggestion underline / card
+
+Phase 2 研究候选：
+
+- external source provider
+- workspace search context
+- meeting transcript source
+- Copilot ghost text / partial accept
+- document translation clone
+
+明确暂缓：
+
+- database / field AI Autofill
+- scheduled AI automation
+- full workflow automation across tasks, calendars and CRM
+
+### 5.8 Review And Revision
+
+AI patch review 必须具备类似 Word / 飞书修订模式的心智模型：
+
+- draft 结果支持 keep / regenerate / discard。
+- selection rewrite 支持 replace / insert below。
+- patch review 支持 accept / reject。
+- revision card 支持 comment / modify / withdraw。
+- agent 或 document-level operation 支持 checkpoint / rollback。
+
+AI patch 与 human revision 可以共用 review UI，但必须保留 actor、action id、model metadata 和 context metadata。
+
+### 5.9 Editing Surface Baseline
+
+Editor Component 首期必须具备：
+
+- persistent toolbar
+- selection toolbar / bubble menu
+- slash command menu
+- block side menu
+- drag handle
+- AI side panel
+- suggestion card
+- revision / patch review card
+
+UI command 不能直接暴露底层 Tiptap command；必须通过 `ToastCommand` registry 包装。
 
 ## 6. Open Items
 
 - 确认首个组件形态是否只支持 React。
-- 确认 `ToastDocument` 的 block list JSON 协议和 Markdown / HTML / ProseMirror 之间的转换边界。
-- 确认 patch 模型采用 ProseMirror step、JSON patch、自定义结构 patch，还是组合模型。
-- 确认首个 AI action：选区改写、续写、总结、结构化整理或多步 agent 编辑。
+- 确认 `ToastDocument` 与 Markdown / HTML / ProseMirror JSON 的 adapter 边界。
+- 确认 `ToastPatch` 内部采用 ProseMirror step、JSON patch、自定义结构 patch，还是组合模型。
+- 确认首期 `ToastSuggestion` 是否只做本地文本建议，还是接入远程 AI。
