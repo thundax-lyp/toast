@@ -12,13 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-runbook`：补齐 AI 编辑器研究 RUNBOOK
-  - 范围文件：
-    - docs/30-designs/RUNBOOK-AI-EDITOR-RESEARCH.md
-  - 处理动作：固定本轮研究的批次顺序、每个产品的必查清单、最低 walkthrough 数量、最低数据来源要求和收口方式。
-  - 验收点：RUNBOOK 能直接指导后续 Tiptap、BlockNote、Cursor 和 AI 文档产品研究，不依赖口头补充。
-  - 重要度：10/10
-
 - [ ] `research-assets`：建立研究截图资产目录约定
   - 范围文件：
     - docs/30-designs/research/assets/README.md

@@ -4,6 +4,8 @@
 
 本文档定义本轮 AI inside editor 研究任务的执行手册。目标是系统研究开源编辑器和高影响力 AI 编辑器产品，形成可追溯、可对比、可落到 `toast` 设计决策的研究文档。
 
+本 RUNBOOK 是一次性执行手册。长期稳定规则以 `docs/00-governance/RESEARCH-DOCUMENT-RULES.md` 为准；如果两者冲突，先同步治理规则，再更新本 RUNBOOK。
+
 ## 2. Scope
 
 当前范围：
