@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-blocknote-ui`：分析 BlockNote UI 操作模式
-  - 范围文件：
-    - docs/30-designs/research/BLOCKNOTE-STUDY.md
-    - docs/30-designs/research/assets/blocknote/
-  - 处理动作：分析 side menu、drag handle、slash menu、formatting toolbar、block type 转换和 block 移动。
-  - 验收点：至少形成 4 个 UI walkthrough，并明确哪些操作是 toast 必须达到的开箱体验。
-  - 重要度：10/10
-
 - [ ] `research-blocknote-ai`：分析 BlockNote AI extension 和 review 机制
   - 范围文件：
     - docs/30-designs/research/BLOCKNOTE-STUDY.md

@@ -108,11 +108,87 @@ interface ToastBlock {
 
 ## 5. Editing Surface
 
-待 `research-blocknote-ui` 补充。
+### 5.1 Feature Inventory
+
+| Feature | Scope | Entry | Trigger | Output | Review Model | Toast Baseline |
+| --- | --- | --- | --- | --- | --- | --- |
+| Block side menu | block | left-side hover menu | hover block | `+` insert or drag handle menu | undo / redo | 必须支持 |
+| Drag handle menu | block | drag handle | click handle | delete, color, reset / transform custom items | undo / redo | 必须支持 |
+| Slash menu | cursor / block | `/` or side-menu `+` | type trigger or click `+` | insert / transform block | undo / redo | 必须支持 |
+| Formatting toolbar | selection | floating toolbar | select text | block type, styles, align, link, nest / unnest | undo / redo | 必须支持 |
+| Grid suggestion menu | cursor | trigger character | type `:` / custom trigger | emoji / mention / command grid | undo / redo | adapt |
+| Cursor / block selection API | cursor / block range | editor API | selection change | block-aware selection state | none | 必须支持 |
+
+### 5.2 Button And Entry Inventory
+
+| UI Area | Button / Item | Visible When | Action | Opens | Final Effect | Source |
+| --- | --- | --- | --- | --- | --- | --- |
+| Block side menu | `+` | block hover | opens block insertion surface | slash menu | insert block near hovered block | Official docs: Side Menu / Suggestion Menus |
+| Block side menu | drag handle | block hover | starts drag or opens menu | drag handle menu | move block or choose block command | Official docs: Side Menu |
+| Drag handle menu | Delete | drag handle menu open | removes hovered block | none | `removeBlocks` style operation | Official docs: Side Menu example |
+| Drag handle menu | Colors | drag handle menu open | changes block colors | color menu | updates block props | Official docs: Side Menu example |
+| Drag handle menu | Reset Type | custom menu item | updates block type | none | `updateBlock(..., { type: "paragraph" })` | Official docs: Side Menu example |
+| Slash menu | command item | `/` query active | runs `onItemClick` | none | insert / transform block | Official docs: Suggestion Menus |
+| Formatting toolbar | Block Type Select | text selected | changes selected block type | dropdown | updates block type / props | Official docs: Formatting Toolbar |
+| Formatting toolbar | Bold / Italic / Underline / Strike / Code | text selected | toggles inline style | none | updates inline styles | Official docs: Formatting Toolbar |
+| Formatting toolbar | Text Align | text selected | changes alignment | menu or button | updates block props | Official docs: Formatting Toolbar |
+| Formatting toolbar | Nest / Unnest | text selected | indents / outdents block | none | changes block physical parent | Official docs: Formatting Toolbar |
+| Formatting toolbar | Create Link | text selected | creates link | link input | updates inline content | Official docs: Formatting Toolbar |
+
+### 5.3 UI State Matrix
+
+| State | UI Signal | User Can Do | Next State |
+| --- | --- | --- | --- |
+| idle | editor body only | type, select, hover block, type trigger | typing / selecting / block-hover / suggestion |
+| block-hover | side menu visible | click `+`, drag handle, drag block | suggestion / drag-menu / dragging |
+| suggestion | slash menu visible | filter query, choose item, escape | applied / idle |
+| selecting | formatting toolbar visible | choose style, block type, link, align, nest | applied / idle |
+| drag-menu | drag handle menu visible | delete, color, transform, custom item | applied / idle |
+| dragging | block follows pointer | drop before / after block | applied / idle |
+| applied | document transaction completed | continue editing or undo | idle |
 
 ## 6. Operation Walkthroughs
 
-待 `research-blocknote-ui` 补充。
+### 6.1 Insert Block From Side Menu
+
+1. User hovers a block.
+2. Block side menu appears on the left.
+3. User clicks `+`.
+4. Slash menu opens at the hovered block context.
+5. User selects a command item.
+6. BlockNote inserts or transforms content near the current block.
+
+Toast baseline: block hover affordance and `+` insertion are required, but insertion target must resolve to a `ToastBlock` id / placement, not a nested child path.
+
+### 6.2 Move Or Transform Block From Drag Handle
+
+1. User hovers a block.
+2. Drag handle appears in the side menu.
+3. User drags the handle to move the block, or clicks the handle to open the drag handle menu.
+4. Menu items such as Delete, Colors, Reset Type run block-level commands.
+5. The editor applies a block transaction.
+
+Toast baseline: drag handle is required for block-level ergonomics. If toast exposes nesting-like UI, it should write list indent / block attrs, not `children`.
+
+### 6.3 Use Slash Menu
+
+1. User types `/` in a block, or clicks side-menu `+`.
+2. Suggestion menu opens.
+3. Text after the trigger filters menu items.
+4. Items are grouped and ordered by the command provider.
+5. Selecting an item runs `onItemClick`.
+
+Toast baseline: slash commands must be command-provider based. AI commands should share the same entry system but return `ToastPatch` when modifying existing content.
+
+### 6.4 Format Selection
+
+1. User highlights text.
+2. Formatting toolbar appears near the selection.
+3. User chooses block type, inline style, color, align, link, nest or unnest.
+4. The command updates selected text or current block.
+5. Toolbar disappears or remains while selection stays active.
+
+Toast baseline: selection toolbar must be block-aware. Nest / unnest should be reinterpreted carefully because BlockNote changes physical tree structure while toast keeps a flat list.
 
 ## 7. AI Entry Points
 
@@ -128,7 +204,14 @@ interface ToastBlock {
 
 ## 10. Keyboard And Shortcut Model
 
-待 `research-blocknote-ui` 补充。
+BlockNote 的 UI 文档明确 `⌘K` 作为文档搜索入口，slash menu 使用 `/` 触发，emoji grid suggestion 使用 `:` 触发。GitHub README 还展示 Tab / Shift+Tab 用于 nesting / indentation。
+
+对 `toast` 的结论：
+
+- `/` 必须作为首期 command palette 入口。
+- `:` / `@` 这类 trigger 应作为可扩展 suggestion controller，不绑定具体业务。
+- Tab / Shift+Tab 可以用于 list indent 或 block indent attrs，但不得把公开文档改成 physical tree。
+- `⌘K` 可作为全局 command / AI action palette 候选，后续需要和 Cursor-style command palette 一起比较。
 
 ## 11. Extension / Customization Model
 
@@ -136,11 +219,16 @@ interface ToastBlock {
 
 ## 12. Strengths
 
-待后续综合补充。
+- 开箱 UI 完整，覆盖 hover block、selection、slash command、drag handle 和 toolbar。
+- block 操作入口平铺，不需要业务方自己从 headless editor 拼装基础体验。
+- UI components 可替换，适合 SDK / component 产品形态。
+- command item schema 简单，适合扩展自定义 blocks、mentions、emoji 和 AI commands。
 
 ## 13. Limits
 
-待后续综合补充。
+- Nest / unnest 与 `children` 绑定，和 toast linear block list 冲突。
+- 默认操作以直接 transaction 为主，没有 AI patch preview 语义。
+- React UI 组件强产品化，但如果直接复用会继承 BlockNote 的 block tree 心智。
 
 ## 14. Required Baseline For Toast
 
@@ -153,6 +241,12 @@ interface ToastBlock {
 | Physical `children: Block[]` | reject | Phase 1 | 与 toast linear block list 冲突 |
 | Depth-first block traversal | adapt | Phase 1 | adapter 可用，但公开输出需要 flatten |
 | `blockGroup` / `blockContainer` / `blockContent` | adapt | Phase 1 | 可借鉴内部 runtime 分层 |
+| Block side menu | adopt | Phase 1 | hover block 时必须有清晰块级入口 |
+| Slash menu | adopt | Phase 1 | command provider 化，支持普通命令和 AI 命令 |
+| Formatting toolbar | adopt | Phase 1 | selection-aware，覆盖 inline style 和 block type |
+| Drag handle menu | adopt | Phase 1 | block move / delete / transform 是开箱基线 |
+| Physical nest / unnest | adapt | Phase 1 | UI 可保留，数据层改为 flat attrs |
+| Grid suggestion menu | adapt | Phase 2 | 适合 mention / emoji / block picker / AI action grid |
 
 ## 15. Lessons For Toast
 
@@ -160,8 +254,9 @@ interface ToastBlock {
 - BlockNote 的 `children` 是强 outliner 取向，能带来直觉缩进体验，但会把章节、缩进和文档结构绑定为物理树。
 - `toast` 应学习 BlockNote 的 block API 清晰度，但不能继承它的公开 block tree。
 - 对 AI 来说，flat block list 更适合生成可审阅 patch；tree path 会让 heading section、collapse range 和批量 patch 更复杂。
+- UI 上，BlockNote 是 toast 的最低开箱水位：hover side menu、drag handle、slash menu、selection toolbar 都应首期具备。
+- 操作上，toast 要把同一套入口从 direct command 扩展为 AI patch command，而不是另做一套割裂的 AI UI。
 
 ## 16. Open Items
 
-- 补充 `research-blocknote-ui`。
 - 补充 `research-blocknote-ai`。
