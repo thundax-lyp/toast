@@ -12,13 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-blocknote-sources`：采集 BlockNote 数据来源清单
-  - 范围文件：
-    - docs/30-designs/research/BLOCKNOTE-STUDY.md
-  - 处理动作：收集 BlockNote 官方文档、GitHub 源码、npm package、license、AI extension 和 block API 来源。
-  - 验收点：`BLOCKNOTE-STUDY.md` 的 `Data Sources` 完整列出来源、访问日期和用途。
-  - 重要度：10/10
-
 - [ ] `research-blocknote-data-model`：分析 BlockNote block tree 数据模型
   - 范围文件：
     - docs/30-designs/research/BLOCKNOTE-STUDY.md
