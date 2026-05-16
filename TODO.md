@@ -12,13 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-cursor-sources`：采集 Cursor 数据来源清单
-  - 范围文件：
-    - docs/30-designs/research/CURSOR-STUDY.md
-  - 处理动作：收集 Cursor 官方文档、changelog、inline edit、chat、agent、rules、context、diff、checkpoint 相关来源。
-  - 验收点：`CURSOR-STUDY.md` 的 `Data Sources` 完整列出来源、访问日期和用途。
-  - 重要度：9/10
-
 - [ ] `research-cursor-inline`：分析 Cursor inline edit 和 quick question
   - 范围文件：
     - docs/30-designs/research/CURSOR-STUDY.md
