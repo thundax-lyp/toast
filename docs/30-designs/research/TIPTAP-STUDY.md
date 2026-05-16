@@ -35,7 +35,68 @@
 
 ## 4. Core Data Model
 
-待补充。
+### 4.1 Runtime Model
+
+Tiptap 的运行时文档模型来自 ProseMirror。Tiptap schema 是严格 schema：未定义的 HTML element 或 attribute 不会作为有效结构进入编辑器。官方 schema 文档给出的基础模型中，`doc` 使用 `content: 'block+'`，`paragraph` 属于 `group: 'block'`，并允许 `inline*` 内容。
+
+对 `toast` 的结论：
+
+- Tiptap 可以作为 linear block list 的运行时基础，因为 top node 可以限制为 `block+`。
+- Tiptap / ProseMirror 内部仍然是树形 node model，例如 paragraph 下有 text，table 下有 row / cell。
+- `toast` 的公开控制面必须是 `ToastDocument.blocks`，不能把 ProseMirror JSON 原样作为主 SDK 数据协议。
+
+### 4.2 Block List Feasibility
+
+Tiptap `Document` extension 是 top node，文档说明它定义 `doc`、`topNode: true`，并允许包含多个 block。Tiptap schema 文档还展示了 `Document = Node.create({ name: 'doc', topNode: true, content: 'block+' })` 的模型。
+
+这与 `toast` 的公开线性 block list 兼容：
+
+```ts
+interface ToastDocument {
+  version: string;
+  blocks: ToastBlock[];
+}
+```
+
+但兼容不等于等同。Tiptap 运行时允许扩展声明更复杂的 content expression，例如 list、table、details 或自定义 node。`toast` 需要在 adapter 层做约束：
+
+- 顶层只允许映射为 `ToastBlock[]`。
+- heading、paragraph、image、table 等顶层 block 都需要稳定 block id。
+- heading 的 `level` 只用于计算逻辑章节，不产生 `children`。
+- table 可以作为单个 block 持有内部 table data，但不参与 heading 章节树。
+- list 建议在公开模型中转换为 flat list item block 或 block attrs，不直接暴露 ProseMirror nested list tree。
+
+### 4.3 Selection And Transaction
+
+ProseMirror `EditorState` 持有当前 `doc`、`selection`、`schema` 和 plugins。`Transaction` 用于从当前 state 生成新 state，并能同时记录文档变化、selection 变化和 transaction metadata。
+
+对 `toast` 的结论：
+
+- Tiptap / ProseMirror selection 适合做内部 selection runtime。
+- `ToastSelection` 应该从 ProseMirror selection 派生，但对外表达 block id、block range、inline range 和 selected text。
+- ProseMirror transaction 适合做 patch apply 的内部执行方式。
+- `ToastPatch` 不应直接等同于 transaction，因为产品层需要 review、accept、reject、rollback 和 AI operation metadata。
+
+### 4.4 History And Collaboration
+
+ProseMirror history plugin 提供 undo / redo，并允许通过 transaction metadata 设置 `addToHistory: false`。collab 模块以 steps 和 version 表达协作同步。
+
+对 `toast` 的结论：
+
+- 普通用户编辑可以走 ProseMirror history。
+- AI patch 的 preview、accept、reject、rollback 需要独立于普通 undo history 建模。
+- ProseMirror steps 可以作为 `ToastPatch` 的内部实现候选，但公开 patch 必须保留 AI action、scope、before / after、review state 和 source context。
+
+### 4.5 Data Model Evidence
+
+| Evidence | Source | Key Fields / API | Meaning | Toast Decision |
+| --- | --- | --- | --- | --- |
+| Tiptap schema | Official docs: schema | `doc.content = 'block+'`, `paragraph.group = 'block'`, `paragraph.content = 'inline*'` | Tiptap 可把 top document 限制为 block 序列 | adopt as runtime constraint |
+| Tiptap Document extension | Official docs: Document extension | `name: 'doc'`, `topNode: true`, `content: 'block+'` | top node 是所有 block 的容器 | adopt internally |
+| ProseMirror EditorState | Official docs: ProseMirror ref | `doc`, `selection`, `schema`, `plugins` | 编辑器状态包含文档和选区 | adapt into `ToastEditor` |
+| ProseMirror Transaction | Official docs: ProseMirror ref | document changes, selection updates, metadata | transaction 是运行时变更载体 | adapt as patch apply backend |
+| ProseMirror history | Official docs: ProseMirror ref | `undo`, `redo`, `addToHistory` | 普通编辑可撤销 | adopt for user edits, separate AI review |
+| ProseMirror collab | Official docs: ProseMirror ref | `steps`, `version`, `clientID` | steps 可表达同步变更 | investigate for `ToastPatch` internals |
 
 ## 5. Editing Surface
 
@@ -75,14 +136,24 @@
 
 ## 14. Required Baseline For Toast
 
-待补充。
+| Product Feature | Toast Decision | Phase | Reason |
+| --- | --- | --- | --- |
+| Strict schema | adopt | Phase 1 | 需要限制文档结构和 AI patch 合法性 |
+| Top node `block+` | adopt | Phase 1 | 支撑 linear block list 运行时约束 |
+| ProseMirror JSON as public document | reject | Phase 1 | 公开模型固定为 `ToastDocument.blocks` |
+| ProseMirror transaction | adapt | Phase 1 | 适合作为 patch apply backend，不适合作为唯一产品 patch |
+| ProseMirror steps | investigate | Phase 1 | 可能承载内部 patch，但需要产品 metadata |
+| Nested list / table runtime tree | adapt | Phase 1 | table 可作为 block 内部结构，list 需要公开模型打平策略 |
 
 ## 15. Lessons For Toast
 
-待补充。
+- Tiptap 适合作为运行时底座，但不应成为公开文档协议。
+- `toast` 可以用 Tiptap schema 限制顶层结构为 block 序列。
+- `ToastDocument` 必须是 adapter 层产物，稳定表达 linear block list。
+- `ToastSelection` 必须基于 block id / block range / inline range，而不是只暴露 ProseMirror positions。
+- `ToastPatch` 可以借助 ProseMirror transaction / steps 执行，但必须保留产品级 review metadata。
 
 ## 16. Open Items
 
-- 补充 `research-tiptap-data-model`。
 - 补充 `research-tiptap-ui`。
 - 补充 `research-tiptap-ai`。

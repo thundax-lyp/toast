@@ -12,13 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-tiptap-data-model`：分析 Tiptap 数据模型和 block list 可行性
-  - 范围文件：
-    - docs/30-designs/research/TIPTAP-STUDY.md
-  - 处理动作：分析 Tiptap / ProseMirror schema、`doc: block+`、node、mark、selection、transaction 和 history。
-  - 验收点：明确 Tiptap 如何支持 toast 的 linear block list 控制，以及哪些内部树结构不能泄漏为公开 SDK。
-  - 重要度：10/10
-
 - [ ] `research-tiptap-ui`：分析 Tiptap UI 操作模式
   - 范围文件：
     - docs/30-designs/research/TIPTAP-STUDY.md
