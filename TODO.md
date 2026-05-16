@@ -12,13 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-tiptap-sources`：采集 Tiptap 数据来源清单
-  - 范围文件：
-    - docs/30-designs/research/TIPTAP-STUDY.md
-  - 处理动作：收集 Tiptap 官方文档、GitHub 源码、npm package、license、AI Toolkit 文档和 ProseMirror 相关来源。
-  - 验收点：`TIPTAP-STUDY.md` 的 `Data Sources` 完整列出来源、访问日期和用途。
-  - 重要度：10/10
-
 - [ ] `research-tiptap-data-model`：分析 Tiptap 数据模型和 block list 可行性
   - 范围文件：
     - docs/30-designs/research/TIPTAP-STUDY.md
