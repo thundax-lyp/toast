@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-word-copilot`：撰写 Word Copilot AI 文档编辑研究
-  - 范围文件：
-    - docs/30-designs/research/WORD-COPILOT-STUDY.md
-    - docs/30-designs/research/assets/word-copilot/
-  - 处理动作：研究 Word Copilot 的 draft、rewrite、summarize、selection edit、review / revision 相关操作。
-  - 验收点：形成至少 3 个 walkthrough，并明确 toast 可学习的传统文档 AI 操作。
-  - 重要度：8/10
-
 - [ ] `research-google-docs-gemini`：撰写 Google Docs Gemini 研究
   - 范围文件：
     - docs/30-designs/research/GOOGLE-DOCS-GEMINI-STUDY.md
