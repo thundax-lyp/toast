@@ -12,12 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-closeout`：收口研究 TODO 和 RUNBOOK
-  - 范围文件：
-    - TODO.md
-    - docs/30-designs/RUNBOOK-AI-EDITOR-RESEARCH.md
-  - 处理动作：删除、拆分或收窄已完成研究 TODO，并判断 RUNBOOK 是保留到后续批次还是清理。
-  - 验收点：TODO 只保留未关闭任务，完成记录不留在 TODO 中。
-  - 重要度：8/10
+无
 
 ## 待讨论项

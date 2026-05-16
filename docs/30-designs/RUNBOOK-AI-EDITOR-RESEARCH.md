@@ -493,12 +493,21 @@ WORD-COPILOT-REWRITE-SUGGESTIONS.png
 
 ## 15. Closeout
 
-本轮研究完成后：
+本轮研究已完成，RUNBOOK 作为研究过程归档保留。后续长期稳定规则以 `docs/00-governance/RESEARCH-DOCUMENT-RULES.md` 和 `docs/00-governance/TODO-RULES.md` 为准。
 
-- 已完成 TODO 必须删除、拆分或收窄。
-- 长期稳定结论必须同步到需求或设计文档。
-- 临时研究执行手册可以删除，或保留到全部研究任务完成后再清理。
-- 完成记录保留在 commit 或 PR 中，不写入 `TODO.md`。
+收口结果：
+
+- 已完成 TODO 已从 `TODO.md` 删除。
+- 开源编辑器基线已同步到 `OPEN-SOURCE-EDITOR-BASELINE.md`。
+- AI 文档产品基线已同步到 `AI-DOCUMENT-PRODUCT-BASELINE.md`。
+- 稳定结论已同步到需求文档和设计文档。
+- 完成记录保留在 commit 历史中，不写入 `TODO.md`。
+
+后续如重启新一轮研究：
+
+- 先新增新的 TODO 任务。
+- 再按本 RUNBOOK 或新的 RUNBOOK 拆 batch。
+- 不复用已关闭任务作为待办。
 
 ## 16. Open Items
 
