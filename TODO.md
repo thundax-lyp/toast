@@ -12,13 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-ai-doc-products-baseline`：汇总 AI 文档产品能力基线
-  - 范围文件：
-    - docs/30-designs/research/AI-DOCUMENT-PRODUCT-BASELINE.md
-  - 处理动作：基于 Word、Google Docs、Notion、飞书、Grammarly 单项研究汇总 AI 文档产品基线。
-  - 验收点：明确 toast 在空白态、选区态、文档级、修订/建议/undo、上下文引用上的产品水位。
-  - 重要度：8/10
-
 - [ ] `research-synthesis-requirements`：同步研究结论到需求文档
   - 范围文件：
     - docs/10-requirements/EDITOR-SDK-REQUIREMENTS.md
