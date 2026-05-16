@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-google-docs-gemini`：撰写 Google Docs Gemini 研究
-  - 范围文件：
-    - docs/30-designs/research/GOOGLE-DOCS-GEMINI-STUDY.md
-    - docs/30-designs/research/assets/google-docs-gemini/
-  - 处理动作：研究 Help me write、空白态生成、选区改写、Workspace 上下文和文档级 AI。
-  - 验收点：形成至少 3 个 walkthrough，并明确 toast 的空白态和文档级 AI 启发。
-  - 重要度：8/10
-
 - [ ] `research-notion-ai`：撰写 Notion AI 研究
   - 范围文件：
     - docs/30-designs/research/NOTION-AI-STUDY.md
