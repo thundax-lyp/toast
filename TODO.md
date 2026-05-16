@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-cursor-agent`：分析 Cursor chat / agent / context / checkpoint
-  - 范围文件：
-    - docs/30-designs/research/CURSOR-STUDY.md
-    - docs/30-designs/research/assets/cursor/
-  - 处理动作：分析 Chat、Agent、context picker、`@` symbols、rules、memories、diff apply、checkpoint rollback。
-  - 验收点：形成至少 2 个 walkthrough，并映射到 toast 的 AI side panel、context chips、patch preview 和 checkpoint。
-  - 重要度：9/10
-
 - [ ] `research-word-copilot`：撰写 Word Copilot AI 文档编辑研究
   - 范围文件：
     - docs/30-designs/research/WORD-COPILOT-STUDY.md
