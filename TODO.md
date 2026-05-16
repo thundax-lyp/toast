@@ -12,13 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-assets`：建立研究截图资产目录约定
-  - 范围文件：
-    - docs/30-designs/research/assets/README.md
-  - 处理动作：定义截图目录、命名规则、来源记录方式和截图缺失时的替代记录方式。
-  - 验收点：每个产品后续截图都有固定存放位置和引用方式。
-  - 重要度：8/10
-
 - [ ] `research-tiptap-sources`：采集 Tiptap 数据来源清单
   - 范围文件：
     - docs/30-designs/research/TIPTAP-STUDY.md
