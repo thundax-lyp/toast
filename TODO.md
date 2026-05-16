@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-grammarly`：撰写 Grammarly AI 写作辅助研究
-  - 范围文件：
-    - docs/30-designs/research/GRAMMARLY-STUDY.md
-    - docs/30-designs/research/assets/grammarly/
-  - 处理动作：研究 Grammarly 的局部建议、rewrite、tone、clarity、低打扰 UI 和 accept / dismiss 机制。
-  - 验收点：形成至少 3 个 walkthrough，并明确 toast 的低打扰写作建议模式。
-  - 重要度：7/10
-
 - [ ] `research-ai-doc-products-baseline`：汇总 AI 文档产品能力基线
   - 范围文件：
     - docs/30-designs/research/AI-DOCUMENT-PRODUCT-BASELINE.md
