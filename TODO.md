@@ -12,13 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-blocknote-ai`：分析 BlockNote AI extension 和 review 机制
-  - 范围文件：
-    - docs/30-designs/research/BLOCKNOTE-STUDY.md
-  - 处理动作：分析 AI menu、AI toolbar、AI extension、accept / reject changes、许可证边界。
-  - 验收点：明确 toast 在 AI patch workflow 上必须达到或超过 BlockNote 的能力。
-  - 重要度：10/10
-
 - [ ] `research-plate-scope`：判断 Plate 是否进入深度研究
   - 范围文件：
     - docs/30-designs/research/PLATE-SCOPE.md

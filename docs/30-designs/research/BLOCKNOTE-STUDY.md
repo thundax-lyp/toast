@@ -192,15 +192,76 @@ Toast baseline: selection toolbar must be block-aware. Nest / unnest should be r
 
 ## 7. AI Entry Points
 
-待 `research-blocknote-ai` 补充。
+### 7.1 Feature Inventory
+
+| Feature | Scope | Entry | Trigger | Output | Review Model | Toast Baseline |
+| --- | --- | --- | --- | --- | --- | --- |
+| AI toolbar button | selection | formatting toolbar | select text, click AI | AI menu command | accept / reject | 必须支持 |
+| AI slash item | cursor / block | slash menu | type `/ai` or choose AI item | AI menu command | accept / reject | 必须支持 |
+| AI menu | selection / block | `AIMenuController` | toolbar or slash entry | prompt / predefined command | user-reviewing state | 必须支持 |
+| Custom AI command | selection / document | AI menu item | choose command | `invokeAI` request | accept / reject | 必须支持 |
+| Agent cursor | block | AI extension state | AI writing | visual AI cursor | review after writing | adapt |
+| Stream tools | document / selection | LLM tool calls | AI response | add / update / delete blocks | accept / reject | 必须支持 |
+
+### 7.2 Button And Entry Inventory
+
+| UI Area | Button / Item | Visible When | Action | Opens | Final Effect | Source |
+| --- | --- | --- | --- | --- | --- | --- |
+| Formatting toolbar | `AIToolbarButton` | text selected | opens AI menu for selection | AI menu | selected content edit | Official docs: AI Getting Started |
+| Slash menu | AI item | `/` query active | opens AI menu at cursor / block | AI menu | generated or updated blocks | Official docs: AI Getting Started |
+| AI menu | custom prompt input | AI menu open | calls `invokeAI` with user prompt | progress state | streamed document changes | Official docs: AI overview / reference |
+| AI menu | predefined command | AI menu open | calls `invokeAI` with preset prompt | progress state | targeted document changes | Official docs: Custom AI Commands |
+| Review UI | accept | `user-reviewing` | `acceptChanges()` | none | keeps AI changes | Official docs: AI Reference |
+| Review UI | reject | `user-reviewing` | `rejectChanges()` | none | reverts AI changes | Official docs: AI Reference |
+| Error UI | retry | error state | `retry()` | progress state | reruns previous call | Official docs: AI Reference |
+| Progress UI | abort | thinking / writing | `abort()` | none | stops AI call | Official docs: AI Reference |
+
+### 7.3 Operation Walkthroughs
+
+#### Selection Rewrite
+
+1. User selects text.
+2. Formatting toolbar appears with `AIToolbarButton`.
+3. User opens AI menu and chooses a command such as tone rewrite.
+4. Command calls `invokeAI({ userPrompt, useSelection: true })`.
+5. AI uses update-only stream tools when command disables add / delete.
+6. User reviews and accepts or rejects the result.
+
+#### Slash AI Generation
+
+1. User types `/ai` in an empty or existing block.
+2. Slash menu provides AI items through `getAISlashMenuItems`.
+3. AI menu opens at a block id.
+4. `deleteEmptyCursorBlock` can remove the temporary empty paragraph when writing starts.
+5. AI streams add / update / delete operations.
+6. User accepts or rejects changes.
 
 ## 8. Context Model
 
-待 `research-blocknote-ai` 补充。
+BlockNote AI sends serialized document state to the backend. The reference defines a `DocumentStateBuilder` that can include either:
+
+- `selection: false`, `blocks`, `isEmptyDocument`
+- `selection: true`, `selectedBlocks`, `blocks`, `isEmptyDocument`
+
+`InvokeAIOptions.useSelection` defaults to selection-aware behavior. Custom commands can force selected-content context and constrain the available stream tools. Backend examples inject the document state into model messages and pass tool definitions to the LLM.
+
+对 `toast` 的结论：
+
+- AI context 必须显式表达 selected blocks、surrounding blocks、cursor block 和 empty document state。
+- Context builder 应以 `ToastDocument.blocks` 生成，避免默认 HTML snapshot 成为主协议。
+- AI action 必须能声明工具权限，例如只允许 update、禁止 add/delete。
+- 后端协议应 provider-neutral，可兼容 Vercel AI SDK，但不绑定它。
 
 ## 9. Patch / Review / Revision Model
 
-待 `research-blocknote-ai` 补充。
+BlockNote AI 的修改由 LLM stream tools 驱动，默认可 add / update / delete blocks。AI extension 状态包括 `user-input`、`thinking`、`ai-writing`、`user-reviewing`、`error`、`closed`。公开 API 提供 `acceptChanges()`、`rejectChanges()`、`retry()` 和 `abort()`。
+
+对 `toast` 的结论：
+
+- BlockNote 已把 accept / reject 变成 AI 编辑器最低水位，toast 不能低于它。
+- `toast` 不应让 LLM tool 直接成为最终文档修改；应先生成 `ToastPatch`，再进入 preview / accept / reject。
+- `ToastPatch` 需要比 BlockNote review state 更可审计：记录 action id、prompt、scope、context hash、before / after、tool permissions、model metadata 和 operation history。
+- `reject` 应能恢复 patch 前状态，`accept` 应落入 operation log，`abort` 应不产生半成品文档状态。
 
 ## 10. Keyboard And Shortcut Model
 
@@ -229,6 +290,9 @@ BlockNote 的 UI 文档明确 `⌘K` 作为文档搜索入口，slash menu 使�
 - Nest / unnest 与 `children` 绑定，和 toast linear block list 冲突。
 - 默认操作以直接 transaction 为主，没有 AI patch preview 语义。
 - React UI 组件强产品化，但如果直接复用会继承 BlockNote 的 block tree 心智。
+- `@blocknote/xl-ai` 是 `GPL-3.0 OR PROPRIETARY`，不适合作为 toast 开源核心依赖。
+- AI context 默认可走 HTML document format；toast 需要 block-list-first context protocol。
+- BlockNote 强调 transparent operations，但公开文档没有显示独立、可序列化、可持久化的 patch 对象。
 
 ## 14. Required Baseline For Toast
 
@@ -247,6 +311,12 @@ BlockNote 的 UI 文档明确 `⌘K` 作为文档搜索入口，slash menu 使�
 | Drag handle menu | adopt | Phase 1 | block move / delete / transform 是开箱基线 |
 | Physical nest / unnest | adapt | Phase 1 | UI 可保留，数据层改为 flat attrs |
 | Grid suggestion menu | adapt | Phase 2 | 适合 mention / emoji / block picker / AI action grid |
+| AI toolbar button | adopt | Phase 1 | selection AI 必须一键可达 |
+| AI slash item | adopt | Phase 1 | cursor / empty block AI 必须一键可达 |
+| AI menu state machine | adopt | Phase 1 | 至少覆盖 input / thinking / writing / reviewing / error |
+| Accept / reject AI changes | adopt | Phase 1 | AI 修改必须可审阅 |
+| Stream add / update / delete tools | adapt | Phase 1 | 转换为 `ToastPatch`，不直接提交 |
+| `@blocknote/xl-ai` dependency | reject | Phase 1 | 许可不适合作为核心依赖 |
 
 ## 15. Lessons For Toast
 
@@ -256,7 +326,9 @@ BlockNote 的 UI 文档明确 `⌘K` 作为文档搜索入口，slash menu 使�
 - 对 AI 来说，flat block list 更适合生成可审阅 patch；tree path 会让 heading section、collapse range 和批量 patch 更复杂。
 - UI 上，BlockNote 是 toast 的最低开箱水位：hover side menu、drag handle、slash menu、selection toolbar 都应首期具备。
 - 操作上，toast 要把同一套入口从 direct command 扩展为 AI patch command，而不是另做一套割裂的 AI UI。
+- AI 上，BlockNote 已经把 toolbar AI、slash AI、custom commands、streaming、accept/reject 串成完整闭环，toast 首期必须覆盖这条主链路。
+- toast 的超越点应放在开放许可、linear block list context、持久化 `ToastPatch`、操作历史和更细粒度 review，而不是只做一个 AI 按钮。
 
 ## 16. Open Items
 
-- 补充 `research-blocknote-ai`。
+无
