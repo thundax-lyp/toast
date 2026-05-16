@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `research-notion-ai`：撰写 Notion AI 研究
-  - 范围文件：
-    - docs/30-designs/research/NOTION-AI-STUDY.md
-    - docs/30-designs/research/assets/notion-ai/
-  - 处理动作：研究 Ask AI、slash AI、选区 AI、block 上下文和页面级 AI。
-  - 验收点：形成至少 3 个 walkthrough，并明确 Notion-style AI 操作中 toast 应学习和避免的点。
-  - 重要度：8/10
-
 - [ ] `research-feishu-docs-ai`：撰写飞书 / Lark Docs AI 研究
   - 范围文件：
     - docs/30-designs/research/FEISHU-DOCS-AI-STUDY.md
