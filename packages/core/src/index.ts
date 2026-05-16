@@ -17,6 +17,24 @@ export {
   type ToastDocumentValidationError,
   type ToastDocumentValidationResult
 } from "./block-model/validate.js";
+export {
+  createToastCommandRegistry,
+  type ToastCommandRegistry
+} from "./command/registry.js";
+export type {
+  ToastCommand,
+  ToastCommandDefinition,
+  ToastCommandRunInput,
+  ToastCommandSource
+} from "./command/types.js";
+export type {
+  ToastContext,
+  ToastContextChip,
+  ToastContextChipKind,
+  ToastContextCoverage,
+  ToastContextOptions,
+  ToastContextSummary
+} from "./context/types.js";
 export { isToastPatchPath, toToastPatchPath, type ToastPatchPath } from "./patch/path.js";
 export type {
   ToastPatch,
@@ -32,3 +50,10 @@ export {
   type ToastPatchValidationError,
   type ToastPatchValidationResult
 } from "./patch/validate.js";
+export type {
+  ToastBlockRange,
+  ToastInlineRange,
+  ToastSectionRange,
+  ToastSelection,
+  ToastSelectionKind
+} from "./selection/types.js";
