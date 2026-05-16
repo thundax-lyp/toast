@@ -1,0 +1,13 @@
+{
+  "name": "@toast-editor/playground",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@toast-editor/ai": "0.0.0",
+    "@toast-editor/core": "0.0.0",
+    "@toast-editor/extensions": "0.0.0",
+    "@toast-editor/react": "0.0.0",
+    "@toast-editor/tiptap": "0.0.0"
+  }
+}
