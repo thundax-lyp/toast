@@ -39,7 +39,15 @@ If coverage tooling is added, write reports to ignored `coverage/`.
 
 ## Commit & Pull Request Guidelines
 
-The current history contains only `Initial commit`, so no detailed convention is established. Use short, imperative commit messages.
+- Every file modification must be committed before ending the task.
+- Commit format: `Type(domain): 中文说明`
+- Split unrelated changes into separate commits.
+- Commit message must state the concrete capability changed.
+
+Examples:
+
+- `Feat(boot): 初始化工程`
+- `Test(editor): 补充编辑器消息测试`
 
 Pull requests should include a summary, reason for change, test results, and screenshots for UI changes.
 
